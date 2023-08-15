@@ -398,7 +398,8 @@ class Generic_MIL_Dataset(Generic_WSI_Classification_Dataset):
 
 		if not self.use_h5:
 			if self.data_dir:
-				full_path = os.path.join(data_dir, 'pt_files', '{}.pt'.format(slide_id))
+				# full_path = os.path.join(data_dir, 'pt_files', '{}.pt'.format(slide_id))
+				full_path = os.path.join(data_dir, 'pt_files_copy', '{}.pt'.format(slide_id))
 				features = torch.load(full_path)
 				return features, label
 			
@@ -452,6 +453,7 @@ class Generic_WSI_Inference_Dataset(Dataset):
 
 	def __getitem__(self, idx):
 		slide_file = self.slide_data[idx]+'.pt'
-		full_path = os.path.join(self.data_dir, 'pt_files',slide_file)
+		# full_path = os.path.join(self.data_dir, 'pt_files',slide_file)
+		full_path = os.path.join(self.data_dir, 'pt_files_copy',slide_file)
 		features = torch.load(full_path)
 		return features
