@@ -16,9 +16,13 @@ def train_loop_survival_coattn(epoch, model, loader, optimizer, n_classes, write
     train_loss_surv, train_loss = 0., 0.
 
     print('\n')
+    # import pdb; pdb.set_trace()
     all_risk_scores = np.zeros((len(loader)))
     all_censorships = np.zeros((len(loader)))
     all_event_times = np.zeros((len(loader)))
+    # all_risk_scores = np.zeros((len(loader.dataset)))
+    # all_censorships = np.zeros((len(loader.dataset)))
+    # all_event_times = np.zeros((len(loader.dataset)))
     
     for batch_idx, (data_WSI, data_omic1, data_omic2, data_omic3, data_omic4, data_omic5, data_omic6, label, event_time, c) in enumerate(loader):
 
@@ -31,7 +35,7 @@ def train_loop_survival_coattn(epoch, model, loader, optimizer, n_classes, write
         data_omic6 = data_omic6.type(torch.FloatTensor).to(device)
         label = label.type(torch.LongTensor).to(device)
         c = c.type(torch.FloatTensor).to(device)
-
+        # import pdb; pdb.set_trace()
         hazards, S, Y_hat, A  = model(x_path=data_WSI, x_omic1=data_omic1, x_omic2=data_omic2, x_omic3=data_omic3, x_omic4=data_omic4, x_omic5=data_omic5, x_omic6=data_omic6)
         loss = loss_fn(hazards=hazards, S=S, Y=label, c=c)
         loss_value = loss.item()
@@ -42,6 +46,9 @@ def train_loop_survival_coattn(epoch, model, loader, optimizer, n_classes, write
             loss_reg = reg_fn(model) * lambda_reg
 
         risk = -torch.sum(S, dim=1).detach().cpu().numpy()
+        # all_risk_scores = np.zeros((len(loader.dataset)))
+        # all_censorships = np.zeros((len(loader.dataset)))
+        # all_event_times = np.zeros((len(loader.dataset)))
         all_risk_scores[batch_idx] = risk
         all_censorships[batch_idx] = c.item()
         all_event_times[batch_idx] = event_time
@@ -158,9 +165,12 @@ def summary_survival_coattn(model, loader, n_classes):
         with torch.no_grad():
             hazards, survival, Y_hat, A  = model(x_path=data_WSI, x_omic1=data_omic1, x_omic2=data_omic2, x_omic3=data_omic3, x_omic4=data_omic4, x_omic5=data_omic5, x_omic6=data_omic6) # return hazards, S, Y_hat, A_raw, results_dict
 
-        risk = np.asscalar(-torch.sum(survival, dim=1).cpu().numpy())
-        event_time = np.asscalar(event_time)
-        c = np.asscalar(c)
+        # risk = np.asscalar(-torch.sum(survival, dim=1).cpu().numpy())
+        risk = np.ndarray.item(-torch.sum(survival, dim=1).cpu().numpy())
+        # event_time = np.asscalar(event_time)
+        event_time = np.ndarray.item(event_time)
+        # c = np.asscalar(c)
+        c = np.ndarray.item(c.numpy())
         all_risk_scores[batch_idx] = risk
         all_censorships[batch_idx] = c
         all_event_times[batch_idx] = event_time

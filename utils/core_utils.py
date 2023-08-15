@@ -144,7 +144,7 @@ def train(datasets: tuple, cur: int, args: Namespace):
     print('\nInit Model...', end=' ')
     model_dict = {"dropout": args.drop_out, 'n_classes': args.n_classes}
     args.fusion = None if args.fusion == 'None' else args.fusion
-
+    # import pdb; pdb.set_trace()
     if args.model_type =='snn':
         model_dict = {'omic_input_dim': args.omic_input_dim, 'model_size_omic': args.model_size_omic, 'n_classes': args.n_classes}
         model = SNN(**model_dict)
@@ -157,7 +157,7 @@ def train(datasets: tuple, cur: int, args: Namespace):
     elif args.model_type == 'mi_fcn':
         model_dict = {'omic_input_dim': args.omic_input_dim, 'fusion': args.fusion, 'num_clusters': 10, 'n_classes': args.n_classes}
         model = MIL_Cluster_FC_surv(**model_dict)
-    elif args.model_type == 'mcat':
+    elif args.model_type == 'mcat':#使用这些参数构造模型
         model_dict = {'fusion': args.fusion, 'omic_sizes': args.omic_sizes, 'n_classes': args.n_classes}
         model = MCAT_Surv(**model_dict)
     else:
@@ -177,7 +177,10 @@ def train(datasets: tuple, cur: int, args: Namespace):
     print('\nInit Loaders...', end=' ')
     train_loader = get_split_loader(train_split, training=True, testing = args.testing, 
         weighted = args.weighted_sample, mode=args.mode, batch_size=args.batch_size)
-    val_loader = get_split_loader(val_split,  testing = args.testing, mode=args.mode, batch_size=args.batch_size)
+    # import pdb; pdb.set_trace() #注意loader的构造，应该是出问题了
+    # for i,data in enumerate(train_loader):
+    #     import pprint; ppirnt(data)
+    val_loader = get_split_loader(val_split,  testing = args.testing, mode=args.mode, batch_size=args.batch_size)#验证集就是测试集
     print('Done!')
 
     print('\nSetup EarlyStopping...', end=' ')
@@ -201,7 +204,9 @@ def train(datasets: tuple, cur: int, args: Namespace):
 
     torch.save(model.state_dict(), os.path.join(args.results_dir, "s_{}_checkpoint.pt".format(cur)))
     model.load_state_dict(torch.load(os.path.join(args.results_dir, "s_{}_checkpoint.pt".format(cur))))
+    # import pdb; pdb.set_trace()
     results_val_dict, val_cindex = summary_survival(model, val_loader, args.n_classes)
+    # results_val_dict, val_cindex = summary_survival_coattn(model, val_loader, args.n_classes)
     print('Val c-Index: {:.4f}'.format(val_cindex))
     writer.close()
     return results_val_dict, val_cindex
@@ -329,19 +334,39 @@ def summary_survival(model, loader, n_classes):
 
     slide_ids = loader.dataset.slide_data['slide_id']
     patient_results = {}
-
-    for batch_idx, (data_WSI, data_omic, label, event_time, c) in enumerate(loader):
-        data_WSI, data_omic = data_WSI.to(device), data_omic.to(device)
+    # import pdb; pdb.set_trace()
+    # for batch_idx, (data_WSI, *data_omic, label, event_time, c) in enumerate(loader):
+    # for batch_idx, (data_WSI, data_omic, label, event_time, c,a,b,d,e,f) in enumerate(loader):
+    for batch_idx, (data_WSI, x_omic1, x_omic2, x_omic3, x_omic4, x_omic5, x_omic6, label, event_time, c) in enumerate(loader):
+        # import pdb; pdb.set_trace()
+        data_omic = {}
+        data_omic['x_omic1'] = x_omic1.to(device)
+        data_omic['x_omic2'] = x_omic2.to(device)
+        data_omic['x_omic3'] = x_omic3.to(device)
+        data_omic['x_omic4'] = x_omic4.to(device)
+        data_omic['x_omic5'] = x_omic5.to(device)
+        data_omic['x_omic6'] = x_omic6.to(device)
+        # data_WSI, data_omic = data_WSI.to(device), data_omic.to(device)
+        data_WSI = data_WSI.to(device)
+        
         label = label.to(device)
         
         slide_id = slide_ids.iloc[batch_idx]
-
+        # import pprint
+        # current_locals = locals()
+        # with open('./variables2.txt', 'w') as f:
+        #     pprint.pprint(current_locals, stream=f)
+        # import pdb; pdb.set_trace()
         with torch.no_grad():
-            hazards, survival, Y_hat, _, _ = model(x_path=data_WSI, x_omic=data_omic)
-
-        risk = np.asscalar(-torch.sum(survival, dim=1).cpu().numpy())
-        event_time = np.asscalar(event_time)
-        c = np.asscalar(c)
+            # hazards, survival, Y_hat, _, _ = model(x_path=data_WSI, x_omic=data_omic)
+            # hazards, survival, Y_hat, _, _ = model(x_path=data_WSI, x_omic1=data_omic['x_omic1'], x_omic2=data_omic['x_omic2'], x_omic3=data_omic['x_omic3'], x_omic4=data_omic['x_omic4'],x_omic5=data_omic['x_omic5'], x_omic6=data_omic['x_omic6'], )
+            hazards, survival, Y_hat, _ = model(x_path=data_WSI, x_omic1=data_omic['x_omic1'], x_omic2=data_omic['x_omic2'], x_omic3=data_omic['x_omic3'], x_omic4=data_omic['x_omic4'],x_omic5=data_omic['x_omic5'], x_omic6=data_omic['x_omic6'], )
+        # risk = np.asscalar(-torch.sum(survival, dim=1).cpu().numpy())
+        risk = np.ndarray.item(-torch.sum(survival, dim=1).cpu().numpy())
+        # event_time = np.asscalar(event_time)
+        event_time = np.ndarray.item(event_time)
+        # c = np.asscalar(c)
+        c = np.ndarray.item(c.numpy())
         all_risk_scores[batch_idx] = risk
         all_censorships[batch_idx] = c
         all_event_times[batch_idx] = event_time

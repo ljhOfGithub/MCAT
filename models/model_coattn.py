@@ -68,7 +68,12 @@ class MCAT_Surv(nn.Module):
         self.classifier = nn.Linear(size[2], n_classes)
 
     def forward(self, **kwargs):
+        # import pdb; pdb.set_trace()
         x_path = kwargs['x_path']
+        # import pprint
+        # current_locals = locals()
+        # with open('./variables.txt', 'w') as f:
+        #     pprint.pprint(current_locals, stream=f)
         x_omic = [kwargs['x_omic%d' % i] for i in range(1,7)]
 
         h_path_bag = self.wsi_net(x_path).unsqueeze(1) ### path embeddings are fed through a FC layer
@@ -471,7 +476,8 @@ def multi_head_attention_forward(
 
 import torch
 from torch import Tensor
-from torch.nn.modules.linear import _LinearWithBias
+# from torch.nn.modules.linear import _LinearWithBias
+from torch.nn.modules.linear import NonDynamicallyQuantizableLinear
 from torch.nn.init import xavier_uniform_
 from torch.nn.init import constant_
 from torch.nn.init import xavier_normal_
@@ -536,7 +542,8 @@ class MultiheadAttention(Module):
             self.in_proj_bias = Parameter(torch.empty(3 * embed_dim))
         else:
             self.register_parameter('in_proj_bias', None)
-        self.out_proj = _LinearWithBias(embed_dim, embed_dim)
+        # self.out_proj = _LinearWithBias(embed_dim, embed_dim)
+        self.out_proj = NonDynamicallyQuantizableLinear(embed_dim, embed_dim)
 
         if add_bias_kv:
             self.bias_k = Parameter(torch.empty(1, 1, embed_dim))

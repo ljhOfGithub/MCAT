@@ -24,14 +24,16 @@ device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class SubsetSequentialSampler(Sampler):
     """Samples elements sequentially from a given list of indices, without replacement.
-
+    #从给定的索引列表中按顺序采样元素，不进行替换
     Arguments:
         indices (sequence): a sequence of indices
     """
     def __init__(self, indices):
+        # import pdb; pdb.set_trace()
         self.indices = indices
 
     def __iter__(self):
+        # import pdb; pdb.set_trace()
         return iter(self.indices)
 
     def __len__(self):
@@ -79,7 +81,8 @@ def collate_MIL_survival_sig(batch):
     return [img, omic1, omic2, omic3, omic4, omic5, omic6, label, event_time, c]
 
 def get_simple_loader(dataset, batch_size=1):
-    kwargs = {'num_workers': 4} if device.type == "cuda" else {}
+    # kwargs = {'num_workers': 4} if device.type == "cuda" else {}
+    kwargs = {'num_workers': 0} if device.type == "cuda" else {}
     loader = DataLoader(dataset, batch_size=batch_size, sampler = sampler.SequentialSampler(dataset), collate_fn = collate_MIL, **kwargs)
     return loader 
 
@@ -94,19 +97,23 @@ def get_split_loader(split_dataset, training = False, testing = False, weighted 
     else:
         collate = collate_MIL_survival
 
-    kwargs = {'num_workers': 4} if device.type == "cuda" else {}
+    # kwargs = {'num_workers': 4} if device.type == "cuda" else {}
+    kwargs = {'num_workers': 0} if device.type == "cuda" else {}
     if not testing:
         if training:
             if weighted:
                 weights = make_weights_for_balanced_classes_split(split_dataset)
-                loader = DataLoader(split_dataset, batch_size=batch_size, sampler = WeightedRandomSampler(weights, len(weights)), collate_fn = collate, **kwargs)    
+                loader = DataLoader(split_dataset, batch_size=batch_size, sampler = WeightedRandomSampler(weights, len(weights)), collate_fn = collate, **kwargs)#在这支训练    
             else:
                 loader = DataLoader(split_dataset, batch_size=batch_size, sampler = RandomSampler(split_dataset), collate_fn = collate, **kwargs)
         else:
             loader = DataLoader(split_dataset, batch_size=batch_size, sampler = SequentialSampler(split_dataset), collate_fn = collate, **kwargs)
     
     else:
-        ids = np.random.choice(np.arange(len(split_dataset), int(len(split_dataset)*0.1)), replace = False)
+        # import pdb; pdb.set_trace()
+        # ids = np.random.choice(np.arange(len(split_dataset), int(len(split_dataset)*0.1)), replace = False)
+        ids = np.random.choice(np.arange(0, len(split_dataset)), int(len(split_dataset)*0.1), replace = False)
+        # ids = np.random.choice(np.arange(0, len(split_dataset)), replace = False)
         loader = DataLoader(split_dataset, batch_size=1, sampler = SubsetSequentialSampler(ids), collate_fn = collate, **kwargs )
 
     return loader

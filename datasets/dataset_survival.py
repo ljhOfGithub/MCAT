@@ -44,15 +44,14 @@ class Generic_WSI_Survival_Dataset(Dataset):
             np.random.seed(seed)
             np.random.shuffle(slide_data)
 
-
+        # import pdb; pdb.set_trace()
         slide_data = pd.read_csv(csv_path, low_memory=False)
         #slide_data = slide_data.drop(['Unnamed: 0'], axis=1)
         if 'case_id' not in slide_data:
             slide_data.index = slide_data.index.str[:12]
             slide_data['case_id'] = slide_data.index
             slide_data = slide_data.reset_index(drop=True)
-        import pdb
-        #pdb.set_trace()
+        # import pdb; #pdb.set_trace()
 
         if not label_col:
             label_col = 'survival_months'
@@ -123,7 +122,8 @@ class Generic_WSI_Survival_Dataset(Dataset):
         ### Signatures
         self.apply_sig = apply_sig
         if self.apply_sig:
-            self.signatures = pd.read_csv('./dataset_csv_sig/signatures.csv')
+            # self.signatures = pd.read_csv('./dataset_csv_sig/signatures.csv')
+            self.signatures = pd.read_csv('/home/jupyter-ljh/data/mydata/MCAT-master/datasets_csv_sig/signatures.csv')
         else:
             self.signatures = None
 
@@ -254,6 +254,7 @@ class Generic_MIL_Survival_Dataset(Generic_WSI_Survival_Dataset):
                     path_features = []
                     for slide_id in slide_ids:
                         wsi_path = os.path.join(data_dir, 'pt_files', '{}.pt'.format(slide_id.rstrip('.svs')))
+                        # wsi_path = os.path.join(data_dir, 'pt_files_copy', '{}.pt'.format(slide_id.rstrip('.svs')))
                         wsi_bag = torch.load(wsi_path)
                         path_features.append(wsi_bag)
                     path_features = torch.cat(path_features, dim=0)
@@ -264,6 +265,7 @@ class Generic_MIL_Survival_Dataset(Generic_WSI_Survival_Dataset):
                     cluster_ids = []
                     for slide_id in slide_ids:
                         wsi_path = os.path.join(data_dir, 'pt_files', '{}.pt'.format(slide_id.rstrip('.svs')))
+                        # wsi_path = os.path.join(data_dir, 'pt_files_copy', '{}.pt'.format(slide_id.rstrip('.svs')))
                         wsi_bag = torch.load(wsi_path)
                         path_features.append(wsi_bag)
                         cluster_ids.extend(self.fname2ids[slide_id[:-4]+'.pt'])
@@ -326,8 +328,8 @@ class Generic_Split(Generic_MIL_Survival_Dataset):
         self.genomic_features = self.slide_data.drop(self.metadata, axis=1)
         self.signatures = signatures
 
-        with open(os.path.join(data_dir, 'fast_cluster_ids.pkl'), 'rb') as handle:
-            self.fname2ids = pickle.load(handle)
+        # with open(os.path.join(data_dir, 'fast_cluster_ids.pkl'), 'rb') as handle:
+        #     self.fname2ids = pickle.load(handle)
 
         def series_intersection(s1, s2):
             return pd.Series(list(set(s1) & set(s2)))
