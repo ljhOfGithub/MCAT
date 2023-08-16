@@ -94,12 +94,14 @@ parser = argparse.ArgumentParser(description='Configurations for Survival Analys
 # parser.add_argument('--data_root_dir',   type=str, default='path/to/data_root_dir', help='Data directory to WSI features (extracted via CLAM')
 parser.add_argument('--data_root_dir',   type=str, default='/home/jupyter-ljh/data/mntdata/data0/LI_jihao/BRCA_fea', help='Data directory to WSI features (extracted via CLAM')
 # parser.add_argument('--data_root_dir', type=str, default='/home/jupyter-ljh/data/mntdata/data0/LI_jihao/BRCA_fea/pyg', help='data directory')#构造的图
-parser.add_argument('--seed', 			 type=int, default=1, help='Random seed for reproducible experiment (default: 1)')
+# parser.add_argument('--seed', 			 type=int, default=1, help='Random seed for reproducible experiment (default: 1)')
+parser.add_argument('--seed', 			 type=int, default=2, help='Random seed for reproducible experiment (default: 1)')
 parser.add_argument('--k', 			     type=int, default=5, help='Number of folds (default: 5)')
 # parser.add_argument('--k', 			     type=int, default=1, help='Number of folds (default: 5)') #方便调试
 parser.add_argument('--k_start',		 type=int, default=-1, help='Start fold (Default: -1, last fold)')
 parser.add_argument('--k_end',			 type=int, default=-1, help='End fold (Default: -1, first fold)')
-parser.add_argument('--results_dir',     type=str, default='./results', help='Results directory (Default: ./results)')
+# parser.add_argument('--results_dir',     type=str, default='./results', help='Results directory (Default: ./results)')
+parser.add_argument('--results_dir',     type=str, default='./results_1', help='Results directory (Default: ./results)') #方便调试
 parser.add_argument('--which_splits',    type=str, default='5foldcv', help='Which splits folder to use in ./splits/ (Default: ./splits/5foldcv')
 # parser.add_argument('--split_dir',       type=str, default='tcga_blca_100', help='Which cancer type within ./splits/<which_splits> to use for training. Used synonymously for "task" (Default: tcga_blca_100)')
 parser.add_argument('--split_dir',       type=str, default='tcga_brca', help='Which cancer type within ./splits/<which_splits> to use for training. Used synonymously for "task" (Default: tcga_blca_100)')
@@ -122,19 +124,24 @@ parser.add_argument('--opt',             type=str, choices = ['adam', 'sgd'], de
 parser.add_argument('--batch_size',      type=int, default=1, help='Batch Size (Default: 1, due to varying bag sizes)')
 # parser.add_argument('--batch_size',      type=int, default=2, help='Batch Size (Default: 1, due to varying bag sizes)') #方便调试
 parser.add_argument('--gc',              type=int, default=32, help='Gradient Accumulation Step.')
-parser.add_argument('--max_epochs',      type=int, default=20, help='Maximum number of epochs to train (default: 20)')
+# parser.add_argument('--max_epochs',      type=int, default=20, help='Maximum number of epochs to train (default: 20)')
+parser.add_argument('--max_epochs',      type=int, default=150, help='Maximum number of epochs to train (default: 20)')
 # parser.add_argument('--max_epochs',      type=int, default=1, help='Maximum number of epochs to train (default: 20)') #方便调试
-parser.add_argument('--lr',				 type=float, default=2e-4, help='Learning rate (default: 0.0001)')
+# parser.add_argument('--lr',				 type=float, default=2e-4, help='Learning rate (default: 0.0001)')
+parser.add_argument('--lr',				 type=float, default=1e-4, help='Learning rate (default: 0.0001)') #方便调试
 parser.add_argument('--bag_loss',        type=str, choices=['svm', 'ce', 'ce_surv', 'nll_surv', 'cox_surv'], default='nll_surv', help='slide-level classification loss function (default: ce)')
 parser.add_argument('--label_frac',      type=float, default=1.0, help='fraction of training labels (default: 1.0)')
 parser.add_argument('--bag_weight',      type=float, default=0.7, help='clam: weight coefficient for bag-level loss (default: 0.7)')
-parser.add_argument('--reg', 			 type=float, default=1e-5, help='L2-regularization weight decay (default: 1e-5)')
-parser.add_argument('--alpha_surv',      type=float, default=0.0, help='How much to weigh uncensored patients')
-parser.add_argument('--reg_type',        type=str, choices=['None', 'omic', 'pathomic'], default='None', help='Which network submodules to apply L1-Regularization (default: None)')
+# parser.add_argument('--reg', 			 type=float, default=1e-5, help='L2-regularization weight decay (default: 1e-5)')
+parser.add_argument('--reg', 			 type=float, default=1e-4, help='L2-regularization weight decay (default: 1e-5)') #方便调试
+# parser.add_argument('--alpha_surv',      type=float, default=0.0, help='How much to weigh uncensored patients')
+parser.add_argument('--alpha_surv',      type=float, default=0.1, help='How much to weigh uncensored patients') #方便调试
+# parser.add_argument('--reg_type',        type=str, choices=['None', 'omic', 'pathomic'], default='None', help='Which network submodules to apply L1-Regularization (default: None)')
+parser.add_argument('--reg_type',        type=str, choices=['None', 'omic', 'pathomic'], default='omic', help='Which network submodules to apply L1-Regularization (default: None)') #方便调试
 parser.add_argument('--lambda_reg',      type=float, default=1e-4, help='L1-Regularization Strength (Default 1e-4)')
 parser.add_argument('--weighted_sample', action='store_true', default=True, help='Enable weighted sampling')
-parser.add_argument('--early_stopping',  action='store_true', default=False, help='Enable early stopping') #方便调试
-# parser.add_argument('--early_stopping',  action='store_true', default=True, help='Enable early stopping') #没影响
+# parser.add_argument('--early_stopping',  action='store_true', default=False, help='Enable early stopping') #方便调试
+parser.add_argument('--early_stopping',  action='store_true', default=True, help='Enable early stopping') #防止过拟合
 parser.add_argument('--inst_loss',  default=None, help='inst_loss') 
 parser.add_argument('--testing',  default=True, help='testing') 
 
