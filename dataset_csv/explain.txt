@@ -1,0 +1,1 @@
+这里的tcga_brca_all_clean.csv是从/home/jupyter-ljh/data/mydata/Patch-GCN-master/dataset_csv/tcga_brca_all_clean.csv复制过来的
