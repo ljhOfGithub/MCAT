@@ -112,7 +112,8 @@ def get_split_loader(split_dataset, training = False, testing = False, weighted 
     else:
         # import pdb; pdb.set_trace()
         # ids = np.random.choice(np.arange(len(split_dataset), int(len(split_dataset)*0.1)), replace = False)
-        ids = np.random.choice(np.arange(0, len(split_dataset)), int(len(split_dataset)*0.1), replace = False)
+        # ids = np.random.choice(np.arange(0, len(split_dataset)), int(len(split_dataset)*0.1), replace = False)
+        ids = np.random.choice(np.arange(0, len(split_dataset)), int(len(split_dataset)), replace = False)
         # ids = np.random.choice(np.arange(0, len(split_dataset)), replace = False)
         loader = DataLoader(split_dataset, batch_size=1, sampler = SubsetSequentialSampler(ids), collate_fn = collate, **kwargs )
 
